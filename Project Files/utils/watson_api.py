@@ -31,16 +31,13 @@ def get_access_token():
     response = requests.post(url, headers=headers, data=data)
 
     print("📩 Status Code:", response.status_code)
-    print("📄 Response Text:", response.text)  # <----- VERY IMPORTANT
+    print("📄 Response Text:", response.text)  # <---- PLEASE copy-paste this output
 
-    try:
-        response.raise_for_status()
-    except requests.exceptions.HTTPError as e:
-        print("\n❌ FULL ERROR:", e)
-        raise  # Let Streamlit show full trace too
+    if response.status_code != 200:
+        # Instead of crashing, return readable error for now
+        return f"❌ TOKEN ERROR {response.status_code}: {response.text}"
 
     return response.json()["access_token"]
-
 
 # ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
