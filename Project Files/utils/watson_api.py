@@ -5,13 +5,13 @@ import json
 
 load_dotenv()
 
+# ENV values
 API_KEY = os.getenv("WATSONX_API_KEY")
 PROJECT_ID = os.getenv("WATSONX_PROJECT_ID")
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-13b-instruct-v2"   
+MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Use supported model ID
 
-
-
+# ✅ Generate IAM Access Token
 def get_access_token():
     url = "https://iam.cloud.ibm.com/identity/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -23,6 +23,7 @@ def get_access_token():
     response.raise_for_status()
     return response.json()["access_token"]
 
+# ✅ Send Prompt to WatsonX AI
 def get_ai_response(prompt):
     access_token = get_access_token()
 
@@ -33,12 +34,12 @@ def get_ai_response(prompt):
 
     payload = {
         "model_id": MODEL_ID,
-        "input": prompt,
+        "input": [prompt],  # ✅ input should be a list
         "parameters": {
             "decoding_method": "sample",
-             "temperature": 0.7,              # add creativity but stay grounded
-    "top_k": 40,
-    "top_p": 0.95,
+            "temperature": 0.7,
+            "top_k": 40,
+            "top_p": 0.95,
             "max_new_tokens": 300
         },
         "project_id": PROJECT_ID
@@ -60,3 +61,4 @@ def get_ai_response(prompt):
         return f"\n❌ HTTP Error: {err}\nStatus: {response.status_code}\nDetails: {response.text}"
     except Exception as e:
         return f"\n❌ Other Error: {str(e)}"
+
