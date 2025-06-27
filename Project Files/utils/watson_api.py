@@ -14,26 +14,21 @@ MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 
 # ✅ STEP 1: Get IAM Access Token
 def get_access_token():
-    import os
-    import requests
-
     url = "https://iam.cloud.ibm.com/identity/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-        "apikey": os.getenv("WATSONX_API_KEY")
+        "apikey": API_KEY
     }
 
     print("\n[INFO] Getting IAM token...")
-    api_key = os.getenv("WATSONX_API_KEY")
-   
+    print("[INFO] API KEY (First 8 chars):", API_KEY[:8] + "..." if API_KEY else "[ERROR] API key missing")
+
     response = requests.post(url, headers=headers, data=data)
-    print("[INFO] API KEY (First 8 chars):", api_key[:8] + "..." if api_key else "[ERROR] API key missing")
     print("[INFO] Status Code:", response.status_code)
     print("[INFO] Response Text:", response.text)
 
     if response.status_code != 200:
-        # Instead of crashing, return readable error for now
         return f"[ERROR] TOKEN ERROR {response.status_code}: {response.text}"
 
     return response.json()["access_token"]
@@ -64,12 +59,10 @@ def get_ai_response(prompt):
 
     try:
         response = requests.post(url, headers=headers, json=payload)
-
         print("[INFO] Status Code:", response.status_code)
         print("[INFO] Response Text:", response.text)
 
         response.raise_for_status()
-
         return response.json()["results"][0]["generated_text"]
 
     except requests.exceptions.HTTPError as err:
