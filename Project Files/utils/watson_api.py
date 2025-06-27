@@ -20,14 +20,19 @@ def get_access_token():
         "apikey": API_KEY
     }
 
+    print("\n🔍 Attempting to get IAM token...")
+    print("🔑 Using API Key:", API_KEY[:8] + "..." if API_KEY else "❌ NOT FOUND")
+
     response = requests.post(url, headers=headers, data=data)
 
-    # 🔍 Print full response for debugging
-    print("🔐 API KEY:", API_KEY[:6] + "..." if API_KEY else "None")
-    print("🔁 Status Code:", response.status_code)
-    print("📩 Response Text:", response.text)
+    # 🔎 Show everything before crashing
+    print("🌐 Request URL:", url)
+    print("📩 Status Code:", response.status_code)
+    print("📄 Response Text:", response.text)
 
-    response.raise_for_status()  # this is where it's failing
+    # Still let it crash for now
+    response.raise_for_status()
+
     return response.json()["access_token"]
 
 
