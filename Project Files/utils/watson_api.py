@@ -19,6 +19,8 @@ def get_access_token():
     data = {
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
         "apikey": API_KEY
+        print("API Key:", API_KEY)  # Debugging line, remove in production
+
     }
     
     response = requests.post(url, headers=headers, data=data)
