@@ -1,17 +1,18 @@
 import os
 import requests
-from dotenv import load_dotenv
 import json
+from dotenv import load_dotenv
 
+# ✅ Load environment variables from .env
 load_dotenv()
 
-# ENV values
+# ✅ Set variables from environment
 API_KEY = os.getenv("WATSONX_API_KEY")
 PROJECT_ID = os.getenv("WATSONX_PROJECT_ID")
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Use supported model ID
+MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 
-# ✅ Generate IAM Access Token
+# ✅ STEP 1: Get IAM Access Token
 def get_access_token():
     url = "https://iam.cloud.ibm.com/identity/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
@@ -20,23 +21,18 @@ def get_access_token():
         "apikey": API_KEY
     }
 
-    print("\n🔍 Attempting to get IAM token...")
-    print("🔑 Using API Key:", API_KEY[:8] + "..." if API_KEY else "❌ NOT FOUND")
+    print("\n🔍 Getting IAM token...")
+    print("🔐 API KEY (First 8 chars):", API_KEY[:8] + "..." if API_KEY else "❌ MISSING")
 
     response = requests.post(url, headers=headers, data=data)
 
-    # 🔎 Show everything before crashing
-    print("🌐 Request URL:", url)
     print("📩 Status Code:", response.status_code)
     print("📄 Response Text:", response.text)
 
-    # Still let it crash for now
-    response.raise_for_status()
-
+    response.raise_for_status()  # This is where any 400/401 error will raise
     return response.json()["access_token"]
 
-
-# ✅ Send Prompt to WatsonX AI
+# ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
     access_token = get_access_token()
 
@@ -47,7 +43,7 @@ def get_ai_response(prompt):
 
     payload = {
         "model_id": MODEL_ID,
-        "input": [prompt],  # ✅ input should be a list
+        "input": [prompt],  # ✅ IBM expects a list of strings
         "parameters": {
             "decoding_method": "sample",
             "temperature": 0.7,
@@ -74,4 +70,5 @@ def get_ai_response(prompt):
         return f"\n❌ HTTP Error: {err}\nStatus: {response.status_code}\nDetails: {response.text}"
     except Exception as e:
         return f"\n❌ Other Error: {str(e)}"
+
 
