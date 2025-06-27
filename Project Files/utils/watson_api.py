@@ -10,7 +10,7 @@ load_dotenv()
 API_KEY = os.getenv("WATSONX_API_KEY")
 PROJECT_ID = os.getenv("WATSONX_PROJECT_ID")
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
+MODEL_ID = "granite-13b-chat-v2"  # ✅ Use this officially supported Granite model
 
 # ✅ STEP 1: Get IAM Access Token
 def get_access_token():
@@ -22,11 +22,8 @@ def get_access_token():
     }
 
     print("\n[INFO] Getting IAM token...")
-    print("[INFO] API KEY (First 8 chars):", API_KEY[:8] + "..." if API_KEY else "[ERROR] API key missing")
-
     response = requests.post(url, headers=headers, data=data)
     print("[INFO] Status Code:", response.status_code)
-    print("[INFO] Response Text:", response.text)
 
     if response.status_code != 200:
         return f"[ERROR] TOKEN ERROR {response.status_code}: {response.text}"
@@ -36,6 +33,8 @@ def get_access_token():
 # ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
     access_token = get_access_token()
+    if "[ERROR]" in access_token:
+        return access_token
 
     headers = {
         "Authorization": f"Bearer {access_token}",
@@ -55,12 +54,13 @@ def get_ai_response(prompt):
         "project_id": PROJECT_ID
     }
 
+    # ✅ Correct endpoint for text generation
     url = f"{BASE_URL}/ml/v1/text/generation?version=2024-05-01"
 
     try:
         response = requests.post(url, headers=headers, json=payload)
         print("[INFO] Status Code:", response.status_code)
-        print("[INFO] Response Text:", response.text)
+        print("[INFO] Response:", response.text)
 
         response.raise_for_status()
         return response.json()["results"][0]["generated_text"]
@@ -69,4 +69,9 @@ def get_ai_response(prompt):
         return f"[ERROR] HTTP Error: {err}\nDetails: {response.text}"
     except Exception as e:
         return f"[ERROR] Other Error: {str(e)}"
+
+# ✅ Sample use
+if __name__ == "__main__":
+    prompt = "Explain the concept of zero trust security in simple terms."
+    print(get_ai_response(prompt))
 
