@@ -3,6 +3,10 @@ from utils.watson_api import get_ai_response
 import json
 import plotly.graph_objects as go
 
+# Add this near the top of app.py
+st.write("### Configuration Check")
+st.write("Watson API Key configured:", "WATSON_API_KEY" in st.secrets)
+st.write("Watson Project ID configured:", "WATSON_PROJECT_ID" in st.secrets)
 st.set_page_config(page_title="HealthAI - Intelligent Healthcare Assistant", layout="wide")
 
 # Load custom styles
