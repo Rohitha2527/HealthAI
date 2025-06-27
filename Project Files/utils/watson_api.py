@@ -44,12 +44,13 @@ def get_ai_response(prompt):
 
     headers = {
         "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
+        "Content-Type": "application/json",
+        "ML-Instance-ID": PROJECT_ID  # ✅ Include this if required
     }
 
     payload = {
         "model_id": MODEL_ID,
-        "input": [prompt],  # ✅ IBM expects a list of strings
+        "input": [prompt],  # Must be a list
         "parameters": {
             "decoding_method": "sample",
             "temperature": 0.7,
@@ -62,16 +63,21 @@ def get_ai_response(prompt):
 
     url = f"{BASE_URL}/ml/v1/text/generation?version=2024-05-01"
 
-    print("\n📤 REQUEST PAYLOAD:")
-    print(json.dumps(payload, indent=2))
-    print("\n🔗 URL:", url)
+    print("[INFO] Sending request to WatsonX...")
+    print("[INFO] Headers:", headers)
+    print("[INFO] Payload:", json.dumps(payload, indent=2))
 
-    try:
-        response = requests.post(url, headers=headers, json=payload)
-        print("\n📥 RAW RESPONSE:")
-        print(response.text)
-        response.raise_for_status()
-        return response.json()["results"][0]["generated_text"]
+    response = requests.post(url, headers=headers, json=payload)
+
+    print("[INFO] Status Code:", response.status_code)
+    print("[INFO] Response Text:", response.text)
+
+    if response.status_code != 200:
+        return f"[ERROR] WatsonX API call failed: {response.text}"
+
+    return response.json()["results"][0]["generated_text"]
+
+
     except requests.exceptions.HTTPError as err:
         return f"\n❌ HTTP Error: {err}\nStatus: {response.status_code}\nDetails: {response.text}"
     except Exception as e:
