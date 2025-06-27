@@ -19,9 +19,17 @@ def get_access_token():
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
         "apikey": API_KEY
     }
+
     response = requests.post(url, headers=headers, data=data)
-    response.raise_for_status()
+
+    # 🔍 Print full response for debugging
+    print("🔐 API KEY:", API_KEY[:6] + "..." if API_KEY else "None")
+    print("🔁 Status Code:", response.status_code)
+    print("📩 Response Text:", response.text)
+
+    response.raise_for_status()  # this is where it's failing
     return response.json()["access_token"]
+
 
 # ✅ Send Prompt to WatsonX AI
 def get_ai_response(prompt):
