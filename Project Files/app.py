@@ -6,7 +6,7 @@ import plotly.graph_objects as go
 st.set_page_config(page_title="HealthAI - Intelligent Healthcare Assistant", layout="wide")
 
 # Load custom styles
-with open("assets/custom_styles.css") as f:
+with open("Project Files/assets/custom_styles.css") as f:
     st.markdown(f"<style>{f.read()}</style>", unsafe_allow_html=True)
 
 # ------------------ HEADER ------------------
