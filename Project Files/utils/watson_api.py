@@ -24,18 +24,17 @@ def get_access_token():
         "apikey": os.getenv("WATSONX_API_KEY")
     }
 
-    print("\n🔍 Getting IAM token...")
+    print("\n[INFO] Getting IAM token...")
     api_key = os.getenv("WATSONX_API_KEY")
-    print("🔐 API KEY (First 8 chars):", api_key[:8] + "..." if api_key else "❌ MISSING")
-
+   
     response = requests.post(url, headers=headers, data=data)
-
-    print("📩 Status Code:", response.status_code)
-    print("📄 Response Text:", response.text)  # <---- PLEASE copy-paste this output
+    print("[INFO] API KEY (First 8 chars):", api_key[:8] + "..." if api_key else "[ERROR] API key missing")
+    print("[INFO] Status Code:", response.status_code)
+    print("[INFO] Response Text:", response.text)
 
     if response.status_code != 200:
         # Instead of crashing, return readable error for now
-        return f"❌ TOKEN ERROR {response.status_code}: {response.text}"
+        return f"[ERROR] TOKEN ERROR {response.status_code}: {response.text}"
 
     return response.json()["access_token"]
 
