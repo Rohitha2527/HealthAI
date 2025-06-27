@@ -14,23 +14,33 @@ MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 
 # ✅ STEP 1: Get IAM Access Token
 def get_access_token():
+    import os
+    import requests
+
     url = "https://iam.cloud.ibm.com/identity/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-        "apikey": API_KEY
+        "apikey": os.getenv("WATSONX_API_KEY")
     }
 
     print("\n🔍 Getting IAM token...")
-    print("🔐 API KEY (First 8 chars):", API_KEY[:8] + "..." if API_KEY else "❌ MISSING")
+    api_key = os.getenv("WATSONX_API_KEY")
+    print("🔐 API KEY (First 8 chars):", api_key[:8] + "..." if api_key else "❌ MISSING")
 
     response = requests.post(url, headers=headers, data=data)
 
     print("📩 Status Code:", response.status_code)
-    print("📄 Response Text:", response.text)
+    print("📄 Response Text:", response.text)  # <----- VERY IMPORTANT
 
-    response.raise_for_status()  # This is where any 400/401 error will raise
+    try:
+        response.raise_for_status()
+    except requests.exceptions.HTTPError as e:
+        print("\n❌ FULL ERROR:", e)
+        raise  # Let Streamlit show full trace too
+
     return response.json()["access_token"]
+
 
 # ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
