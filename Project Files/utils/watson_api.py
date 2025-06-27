@@ -1,34 +1,40 @@
 import os
 import requests
-from dotenv import load_dotenv
 import json
+from dotenv import load_dotenv
 
-# Load environment variables from .env file
+# ✅ Load environment variables from .env
 load_dotenv()
 
-# Retrieve API key and project ID from environment variables
+# ✅ Set variables from environment
 API_KEY = os.getenv("WATSONX_API_KEY")
 PROJECT_ID = os.getenv("WATSONX_PROJECT_ID")
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-13b-instruct-v2"
+MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 
+# ✅ STEP 1: Get IAM Access Token
 def get_access_token():
-    """Retrieve access token for IBM Watson API."""
     url = "https://iam.cloud.ibm.com/identity/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
         "apikey": API_KEY
-        print("API Key:", API_KEY)  # Debugging line, remove in production
-
     }
-    
+
+    print("\n[INFO] Getting IAM token...")
+    print("[INFO] API KEY (First 8 chars):", API_KEY[:8] + "..." if API_KEY else "[ERROR] API key missing")
+
     response = requests.post(url, headers=headers, data=data)
-    response.raise_for_status()  # Raise an error for bad responses
+    print("[INFO] Status Code:", response.status_code)
+    print("[INFO] Response Text:", response.text)
+
+    if response.status_code != 200:
+        return f"[ERROR] TOKEN ERROR {response.status_code}: {response.text}"
+
     return response.json()["access_token"]
 
+# ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
-    """Generate a response from the AI model based on the provided prompt."""
     access_token = get_access_token()
 
     headers = {
@@ -38,10 +44,10 @@ def get_ai_response(prompt):
 
     payload = {
         "model_id": MODEL_ID,
-        "input": prompt,
+        "input": [prompt],
         "parameters": {
             "decoding_method": "sample",
-            "temperature": 0.7,  # Add creativity but stay grounded
+            "temperature": 0.7,
             "top_k": 40,
             "top_p": 0.95,
             "max_new_tokens": 300
@@ -51,21 +57,16 @@ def get_ai_response(prompt):
 
     url = f"{BASE_URL}/ml/v1/text/generation?version=2024-05-01"
 
-    print("\n📤 REQUEST PAYLOAD:")
-    print(json.dumps(payload, indent=2))
-    print("\n🔗 URL:", url)
-
     try:
         response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()  # Raise an error for bad responses
-        return response.json()["results"][0]["generated_text"]
-    except requests.exceptions.HTTPError as err:
-        return f"\n❌ HTTP Error: {err}\nStatus: {response.status_code}\nDetails: {response.text}"
-    except Exception as e:
-        return f"\n❌ Other Error: {str(e)}"
+        print("[INFO] Status Code:", response.status_code)
+        print("[INFO] Response Text:", response.text)
 
-# Example usage
-if __name__ == "__main__":
-    prompt = "What are the benefits of using AI in healthcare?"
-    response = get_ai_response(prompt)
-    print("\n📝 AI Response:", response)
+        response.raise_for_status()
+        return response.json()["results"][0]["generated_text"]
+
+    except requests.exceptions.HTTPError as err:
+        return f"[ERROR] HTTP Error: {err}\nDetails: {response.text}"
+    except Exception as e:
+        return f"[ERROR] Other Error: {str(e)}"
+
