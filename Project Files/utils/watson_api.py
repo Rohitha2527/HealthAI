@@ -1,49 +1,13 @@
-import streamlit as st
-import requests
-import json
-
-# ✅ Load from Streamlit Secrets
-API_KEY = st.secrets.get("WATSONX_API_KEY")
-PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
-
-BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Updated IBM Granite model
-
-
-# ✅ STEP 1: Get IAM Access Token
-def get_access_token():
-    print("🔍 DEBUG: API_KEY =", API_KEY)
-    print("🔍 DEBUG: PROJECT_ID =", PROJECT_ID)
-    if not API_KEY:
-        raise Exception("❌ API Key missing in Streamlit secrets.")
-
-    url = "https://iam.cloud.ibm.com/identity/token"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    data = {
-        "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-        "apikey": API_KEY
-    }
-
-    response = requests.post(url, headers=headers, data=data)
-
-    if response.status_code != 200:
-        raise Exception(f"""❌ Failed to get IAM token.
-Status: {response.status_code}
-Response: {response.text}
-""")
-
-    return response.json()["access_token"]
-
-
-# ✅ STEP 2: Generate response using IBM Watsonx AI
 def get_ai_response(prompt):
-    access_token = get_access_token()
+    access_token = get_access_token()  # ✅ Step 1: get token
 
+    # ✅ Step 2: Pass token in Authorization header
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {access_token}",   # ✅ Include token here
         "Content-Type": "application/json"
     }
 
+    # ✅ Step 3: Build the payload for the model
     payload = {
         "model_id": MODEL_ID,
         "input": [prompt],
@@ -59,14 +23,18 @@ def get_ai_response(prompt):
 
     url = f"{BASE_URL}/ml/v1/text/generation?version=2024-05-01"
 
-    response = requests.post(url, headers=headers, json=payload)
+    try:
+        response = requests.post(url, headers=headers, json=payload)
+        print("✅ Token starts with:", access_token[:10])
+        print("✅ Sent to:", url)
+        print("✅ Status:", response.status_code)
+        print("✅ Raw Response:", response.text)
 
-    if response.status_code != 200:
-        raise Exception(f"""❌ Failed to get AI response.
-Status: {response.status_code}
-Response: {response.text}
-""")
+        response.raise_for_status()
+        return response.json()["results"][0]["generated_text"]
 
-    return response.json()["results"][0]["generated_text"]
-
+    except requests.exceptions.HTTPError as err:
+        return f"[ERROR] HTTP Error: {err}\nDetails: {response.text}"
+    except Exception as e:
+        return f"[ERROR] Other Error: {str(e)}"
 
