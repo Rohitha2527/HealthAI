@@ -24,16 +24,19 @@ def get_access_token():
         "apikey": API_KEY
     }
 
+    print("🔍 API Key (first 6):", API_KEY[:6] if API_KEY else "❌ MISSING")
     response = requests.post(url, headers=headers, data=data)
 
     if response.status_code != 200:
-        raise Exception(f"""
-❌ Failed to get IAM token.
-
+        print("❌ TOKEN ERROR")
+        print("Status:", response.status_code)
+        print("Text:", response.text)
+        raise Exception(f"""❌ Failed to get IAM token.
 Status: {response.status_code}
 Response: {response.text}
 """)
 
+    print("✅ IAM Token Retrieved!")
     return response.json()["access_token"]
 
 
