@@ -20,14 +20,19 @@ def get_access_token():
     }
     data = {
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-        "apikey": API_KEY  # from .env
+        "apikey": API_KEY
     }
 
     response = requests.post(url, headers=headers, data=data)
-    response.raise_for_status()
+
+    if response.status_code != 200:
+        print("[❌] Token Request Failed")
+        print("Status Code:", response.status_code)
+        print("Response Text:", response.text)
+        raise Exception("Failed to get IAM token.")
+
     return response.json()["access_token"]
 
-# ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
     access_token = get_access_token()
 
