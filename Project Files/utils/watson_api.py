@@ -1,22 +1,20 @@
 import streamlit as st
-import os
 import requests
 import json
-from dotenv import load_dotenv
 
-# ✅ Load environment variables from .env
-load_dotenv()
-
+# ✅ Load from Streamlit Secrets
 API_KEY = st.secrets.get("WATSONX_API_KEY")
 PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
 
-print("🔍 API Key First 6:", API_KEY[:6] if API_KEY else "❌ MISSING")
-print("📁 Project ID:", PROJECT_ID if PROJECT_ID else "❌ MISSING")
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
+MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Updated IBM Granite model
+
 
 # ✅ STEP 1: Get IAM Access Token
 def get_access_token():
+    if not API_KEY:
+        raise Exception("❌ API Key missing in Streamlit secrets.")
+
     url = "https://iam.cloud.ibm.com/identity/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
@@ -24,33 +22,26 @@ def get_access_token():
         "apikey": API_KEY
     }
 
-    print("🔍 API Key (first 6):", API_KEY[:6] if API_KEY else "❌ MISSING")
     response = requests.post(url, headers=headers, data=data)
 
     if response.status_code != 200:
-        print("❌ TOKEN ERROR")
-        print("Status:", response.status_code)
-        print("Text:", response.text)
         raise Exception(f"""❌ Failed to get IAM token.
 Status: {response.status_code}
 Response: {response.text}
 """)
 
-    print("✅ IAM Token Retrieved!")
     return response.json()["access_token"]
 
 
-# ✅ STEP 2: Use the Granite model to generate a response
+# ✅ STEP 2: Generate response using IBM Watsonx AI
 def get_ai_response(prompt):
-    access_token = get_access_token()  # ✅ Step 1: get token
+    access_token = get_access_token()
 
-    # ✅ Step 2: Pass token in Authorization header
     headers = {
-        "Authorization": f"Bearer {access_token}",   # ✅ Include token here
+        "Authorization": f"Bearer {access_token}",
         "Content-Type": "application/json"
     }
 
-    # ✅ Step 3: Build the payload for the model
     payload = {
         "model_id": MODEL_ID,
         "input": [prompt],
@@ -66,21 +57,14 @@ def get_ai_response(prompt):
 
     url = f"{BASE_URL}/ml/v1/text/generation?version=2024-05-01"
 
-    try:
-        response = requests.post(url, headers=headers, json=payload)
-        print("✅ Token starts with:", access_token[:10])
-        print("✅ Sent to:", url)
-        print("✅ Status:", response.status_code)
-        print("✅ Raw Response:", response.text)
+    response = requests.post(url, headers=headers, json=payload)
 
-        response.raise_for_status()
-        return response.json()["results"][0]["generated_text"]
+    if response.status_code != 200:
+        raise Exception(f"""❌ Failed to get AI response.
+Status: {response.status_code}
+Response: {response.text}
+""")
 
-    except requests.exceptions.HTTPError as err:
-        return f"[ERROR] HTTP Error: {err}\nDetails: {response.text}"
-    except Exception as e:
-        return f"[ERROR] Other Error: {str(e)}"
-
-
+    return response.json()["results"][0]["generated_text"]
 
 
