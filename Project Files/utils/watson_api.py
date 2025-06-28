@@ -1,62 +1,30 @@
+# utils/watson_api.py
+
 import streamlit as st
-import requests
-import json
+from transformers import pipeline
 
-# ✅ Load credentials from Streamlit secrets
-API_KEY = st.secrets.get("WATSONX_API_KEY")
-PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
-BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-3-8b-instruct"  # ✅ Recommended model (stable + supported)
+# ✅ Load Hugging Face Token from secrets
+HF_TOKEN = st.secrets.get("HF_TOKEN")  # You must set this in `.streamlit/secrets.toml`
 
-# ✅ Check for missing secrets
-if not API_KEY or not PROJECT_ID:
-    raise Exception("❌ API Key or Project ID missing in Streamlit secrets.")
+# ✅ Validate the token
+if not HF_TOKEN:
+    raise Exception("❌ Hugging Face token missing in Streamlit secrets.")
 
-# ✅ Get IAM token from IBM Cloud
-def get_access_token():
-    url = "https://iam.cloud.ibm.com/identity/token"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
-    data = {
-        "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-        "apikey": API_KEY
-    }
+# ✅ Load the model (only once, cached)
+@st.cache_resource
+def load_model():
+    return pipeline(
+        "text-generation",
+        model="ibm-granite/granite-3.3-25-instruct",  # Make sure this model exists on Hugging Face
+        use_auth_token=HF_TOKEN
+    )
 
-    response = requests.post(url, headers=headers, data=data)
+generator = load_model()
 
-    if response.status_code != 200:
-        raise Exception(f"❌ Failed to get IAM token.\nStatus: {response.status_code}\nDetails: {response.text}")
-
-    return response.json()["access_token"]
-
-# ✅ Call Granite model and return output
+# ✅ Call the model
 def get_ai_response(prompt):
-    access_token = get_access_token()
-
-    headers = {
-        "Authorization": f"Bearer {access_token}",
-        "Content-Type": "application/json"
-    }
-
-    payload = {
-        "model_id": MODEL_ID,
-        "input": [prompt],  # Granite requires a list
-        "parameters": {
-            "decoding_method": "sample",
-            "temperature": 0.7,
-            "top_k": 40,
-            "top_p": 0.95,
-            "max_new_tokens": 300
-        },
-        "project_id": PROJECT_ID
-    }
-
-    url = f"{BASE_URL}/ml/v1/text/generation?version=2024-05-01"
-
     try:
-        response = requests.post(url, headers=headers, json=payload)
-        response.raise_for_status()
-        return response.json()["results"][0]["generated_text"]
-    except requests.exceptions.HTTPError as err:
-        return f"❌ HTTP Error: {err}\nDetails: {response.text}"
+        output = generator(prompt, max_new_tokens=300, do_sample=True, temperature=0.7, top_k=40, top_p=0.95)
+        return output[0]["generated_text"]
     except Exception as e:
-        return f"❌ Other Error: {str(e)}"
+        return f"❌ Hugging Face Error: {str(e)}"
