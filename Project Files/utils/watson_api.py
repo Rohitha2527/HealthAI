@@ -7,13 +7,6 @@ from dotenv import load_dotenv
 # ✅ Load environment variables from .env
 load_dotenv()
 
-# ✅ Set variables from environment
-import os
-
-# ✅ Reads from Streamlit Cloud secrets
-import streamlit as st
-import requests
-
 API_KEY = st.secrets.get("WATSONX_API_KEY")
 PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
 
