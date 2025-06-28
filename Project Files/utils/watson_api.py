@@ -12,6 +12,8 @@ import os
 # ✅ Reads from Streamlit Cloud secrets
 API_KEY = os.environ.get("WATSONX_API_KEY")
 PROJECT_ID = os.environ.get("WATSONX_PROJECT_ID")
+print("🔍 Streamlit Secrets - API_KEY:", "✅ FOUND" if API_KEY else "❌ MISSING")
+print("🔍 Streamlit Secrets - PROJECT_ID:", "✅ FOUND" if PROJECT_ID else "❌ MISSING")
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
 MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 
