@@ -8,8 +8,10 @@ load_dotenv()
 
 API_KEY = st.secrets.get("WATSONX_API_KEY")
 PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
+print("✅ Loaded secrets:")
 print("🔐 API Key Found:", bool(API_KEY))
 print("📁 Project ID Found:", bool(PROJECT_ID))
+
 
 # ❌ This will raise an error if secrets are missing
 if not API_KEY or not PROJECT_ID:
