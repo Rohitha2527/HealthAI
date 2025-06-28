@@ -11,7 +11,8 @@ PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
 print("✅ Loaded secrets:")
 print("🔐 API Key Found:", bool(API_KEY))
 print("📁 Project ID Found:", bool(PROJECT_ID))
-
+print("🔐 API:", API_KEY[:6] if API_KEY else "❌ Missing")
+print("🔐 PID:", PROJECT_ID[:6] if PROJECT_ID else "❌ Missing")
 
 # ❌ This will raise an error if secrets are missing
 if not API_KEY or not PROJECT_ID:
