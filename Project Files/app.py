@@ -161,7 +161,7 @@ Please respond using bullet points where appropriate. Make sure the final respon
 # ------------------ HEALTH ANALYTICS ------------------
 elif selected_tab == "Health Analytics Dashboard":
     st.subheader("📊 Health Analytics Dashboard")
-    with open("data/health_metrics.json") as f:
+    with open("Project Files/data/health_metrics.json") as f:
         data = json.load(f)
 
     col1, col2 = st.columns(2)
