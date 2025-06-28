@@ -12,6 +12,8 @@ MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Updated IBM Granite model
 
 # ✅ STEP 1: Get IAM Access Token
 def get_access_token():
+    print("🔍 DEBUG: API_KEY =", API_KEY)
+    print("🔍 DEBUG: PROJECT_ID =", PROJECT_ID)
     if not API_KEY:
         raise Exception("❌ API Key missing in Streamlit secrets.")
 
