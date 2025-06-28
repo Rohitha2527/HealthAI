@@ -5,9 +5,10 @@ import json
 # ✅ Get secrets from Streamlit Cloud (or .streamlit/secrets.toml if local)
 API_KEY = st.secrets.get("WATSONX_API_KEY")
 PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
-
+print("🔐 API Key Found:", bool(API_KEY))
+print("📁 Project ID Found:", bool(PROJECT_ID))
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Watsonx Granite model
+MODEL_ID = "ibm/granite-3-8b-instruct"  # ✅ Watsonx Granite model
 
 # ✅ IAM Token Endpoint
 IAM_URL = "https://iam.cloud.ibm.com/identity/token"
