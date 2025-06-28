@@ -7,8 +7,11 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # ✅ Set variables from environment
-API_KEY = os.getenv("WATSONX_API_KEY")
-PROJECT_ID = os.getenv("WATSONX_PROJECT_ID")
+import os
+
+# ✅ Reads from Streamlit Cloud secrets
+API_KEY = os.environ.get("WATSONX_API_KEY")
+PROJECT_ID = os.environ.get("WATSONX_PROJECT_ID")
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
 MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 
