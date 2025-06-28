@@ -19,3 +19,4 @@ print("🔑 API Key starts with:", API_KEY[:10] + "..." if API_KEY else "❌ Not
 print("📡 Status Code:", response.status_code)
 print("📥 Response:", response.text)
 
+
