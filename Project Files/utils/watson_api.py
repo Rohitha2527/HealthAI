@@ -21,19 +21,20 @@ def get_access_token():
         "apikey": API_KEY
     }
 
-    print("🔍 API Key loaded:", API_KEY[:10] + "..." if API_KEY else "❌ None")
-    print("🔁 Sending token request...")
+    # 💬 DEBUG PRINTS
+    print("🔐 API KEY:", "✅ Loaded" if API_KEY else "❌ MISSING")
+    print("📦 REQUEST DATA:", data)
 
     response = requests.post(url, headers=headers, data=data)
 
-    print("📡 Status Code:", response.status_code)
-    print("📥 Response:", response.text)
+    print("📡 RESPONSE STATUS:", response.status_code)
+    print("📥 RESPONSE TEXT:", response.text)
 
     if response.status_code != 200:
-        raise Exception("Failed to get IAM token.")
+        raise Exception("❌ Failed to get IAM token.\n\n" +
+                        f"Status: {response.status_code}\nResponse: {response.text}")
 
     return response.json()["access_token"]
-
 def get_ai_response(prompt):
     access_token = get_access_token()
 
