@@ -21,20 +21,19 @@ def get_access_token():
         "apikey": API_KEY
     }
 
-    # 💬 DEBUG PRINTS
-    print("🔐 API KEY:", "✅ Loaded" if API_KEY else "❌ MISSING")
-    print("📦 REQUEST DATA:", data)
+    print("\n[INFO] Getting IAM token...")
+    print("[INFO] API KEY (First 8 chars):", API_KEY[:8] + "..." if API_KEY else "[ERROR] API key missing")
 
     response = requests.post(url, headers=headers, data=data)
-
-    print("📡 RESPONSE STATUS:", response.status_code)
-    print("📥 RESPONSE TEXT:", response.text)
+    print("[INFO] Status Code:", response.status_code)
+    print("[INFO] Response Text:", response.text)
 
     if response.status_code != 200:
-        raise Exception("❌ Failed to get IAM token.\n\n" +
-                        f"Status: {response.status_code}\nResponse: {response.text}")
+        return f"[ERROR] TOKEN ERROR {response.status_code}: {response.text}"
 
     return response.json()["access_token"]
+
+# ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
     access_token = get_access_token()
 
@@ -70,5 +69,6 @@ def get_ai_response(prompt):
         return f"[ERROR] HTTP Error: {err}\nDetails: {response.text}"
     except Exception as e:
         return f"[ERROR] Other Error: {str(e)}"
+
 
 
