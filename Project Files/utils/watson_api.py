@@ -15,22 +15,16 @@ MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 # ✅ STEP 1: Get IAM Access Token
 def get_access_token():
     url = "https://iam.cloud.ibm.com/identity/token"
-    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    headers = {
+        "Content-Type": "application/x-www-form-urlencoded"
+    }
     data = {
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
-        "apikey": API_KEY
+        "apikey": API_KEY  # from .env
     }
 
-    print("\n[INFO] Getting IAM token...")
-    print("[INFO] API KEY (First 8 chars):", API_KEY[:8] + "..." if API_KEY else "[ERROR] API key missing")
-
     response = requests.post(url, headers=headers, data=data)
-    print("[INFO] Status Code:", response.status_code)
-    print("[INFO] Response Text:", response.text)
-
-    if response.status_code != 200:
-        return f"[ERROR] TOKEN ERROR {response.status_code}: {response.text}"
-
+    response.raise_for_status()
     return response.json()["access_token"]
 
 # ✅ STEP 2: Use the Granite model to generate a response
