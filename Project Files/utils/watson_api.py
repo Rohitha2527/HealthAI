@@ -15,16 +15,14 @@ MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 # ✅ STEP 1: Get IAM Access Token
 def get_access_token():
     url = "https://iam.cloud.ibm.com/identity/token"
-    headers = {
-        "Content-Type": "application/x-www-form-urlencoded"
-    }
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
         "apikey": API_KEY
     }
 
-    print("🔍 Getting IAM Token...")
-    print("🔑 API Key starts with:", API_KEY[:8] + "..." if API_KEY else "None")
+    print("🔑 Getting token with API key:", API_KEY[:10] + "..." if API_KEY else "None")
+    print("📦 Sending POST request to:", url)
 
     response = requests.post(url, headers=headers, data=data)
     print("📡 Response Status:", response.status_code)
