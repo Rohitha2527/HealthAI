@@ -21,12 +21,13 @@ def get_access_token():
         "apikey": API_KEY
     }
 
-    print("🔑 Getting token with API key:", API_KEY[:10] + "..." if API_KEY else "None")
-    print("📦 Sending POST request to:", url)
+    print("🔍 API Key loaded:", API_KEY[:10] + "..." if API_KEY else "❌ None")
+    print("🔁 Sending token request...")
 
     response = requests.post(url, headers=headers, data=data)
-    print("📡 Response Status:", response.status_code)
-    print("📥 Response Text:", response.text)
+
+    print("📡 Status Code:", response.status_code)
+    print("📥 Response:", response.text)
 
     if response.status_code != 200:
         raise Exception("Failed to get IAM token.")
