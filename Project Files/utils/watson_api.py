@@ -11,11 +11,14 @@ load_dotenv()
 import os
 
 # ✅ Reads from Streamlit Cloud secrets
-API_KEY = os.environ.get("WATSONX_API_KEY")
-PROJECT_ID = os.environ.get("WATSONX_PROJECT_ID")
-print("✅ Loaded secrets:")
-print("🔐 API Key starts with:", API_KEY[:6] + "..." if API_KEY else "❌ NOT FOUND")
-print("📁 Project ID:", PROJECT_ID if PROJECT_ID else "❌ NOT FOUND")
+import streamlit as st
+import requests
+
+API_KEY = st.secrets.get("WATSONX_API_KEY")
+PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
+
+print("🔍 API Key First 6:", API_KEY[:6] if API_KEY else "❌ MISSING")
+print("📁 Project ID:", PROJECT_ID if PROJECT_ID else "❌ MISSING")
 BASE_URL = "https://us-south.ml.cloud.ibm.com"
 MODEL_ID = "ibm/granite-3-3-2b-instruct"  # ✅ Recommended Granite model
 
@@ -27,9 +30,19 @@ def get_access_token():
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
         "apikey": API_KEY
     }
+
     response = requests.post(url, headers=headers, data=data)
-    response.raise_for_status()
+
+    if response.status_code != 200:
+        raise Exception(f"""
+❌ Failed to get IAM token.
+
+Status: {response.status_code}
+Response: {response.text}
+""")
+
     return response.json()["access_token"]
+
 
 # ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
