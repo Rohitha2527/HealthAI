@@ -33,13 +33,15 @@ def get_access_token():
 
 # ✅ STEP 2: Use the Granite model to generate a response
 def get_ai_response(prompt):
-    access_token = get_access_token()
+    access_token = get_access_token()  # ✅ Step 1: get token
 
+    # ✅ Step 2: Pass token in Authorization header
     headers = {
-        "Authorization": f"Bearer {access_token}",
+        "Authorization": f"Bearer {access_token}",   # ✅ Include token here
         "Content-Type": "application/json"
     }
 
+    # ✅ Step 3: Build the payload for the model
     payload = {
         "model_id": MODEL_ID,
         "input": [prompt],
@@ -57,8 +59,10 @@ def get_ai_response(prompt):
 
     try:
         response = requests.post(url, headers=headers, json=payload)
-        print("[INFO] Status Code:", response.status_code)
-        print("[INFO] Response Text:", response.text)
+        print("✅ Token starts with:", access_token[:10])
+        print("✅ Sent to:", url)
+        print("✅ Status:", response.status_code)
+        print("✅ Raw Response:", response.text)
 
         response.raise_for_status()
         return response.json()["results"][0]["generated_text"]
@@ -67,6 +71,7 @@ def get_ai_response(prompt):
         return f"[ERROR] HTTP Error: {err}\nDetails: {response.text}"
     except Exception as e:
         return f"[ERROR] Other Error: {str(e)}"
+
 
 
 
