@@ -1,43 +1,34 @@
-import streamlit as st
+import os
 import requests
+from dotenv import load_dotenv
 import json
 
-# ✅ Get secrets from Streamlit Cloud (or .streamlit/secrets.toml if local)
+load_dotenv()
+
 API_KEY = st.secrets.get("WATSONX_API_KEY")
 PROJECT_ID = st.secrets.get("WATSONX_PROJECT_ID")
 print("🔐 API Key Found:", bool(API_KEY))
 print("📁 Project ID Found:", bool(PROJECT_ID))
-BASE_URL = "https://us-south.ml.cloud.ibm.com"
-MODEL_ID = "ibm/granite-3-8b-instruct"  # ✅ Watsonx Granite model
 
-# ✅ IAM Token Endpoint
-IAM_URL = "https://iam.cloud.ibm.com/identity/token"
-
-# ✅ Check for missing secrets
+# ❌ This will raise an error if secrets are missing
 if not API_KEY or not PROJECT_ID:
     raise Exception("❌ API Key or Project ID missing in Streamlit secrets.")
+BASE_URL = "https://us-south.ml.cloud.ibm.com"
+MODEL_ID = "ibm/granite-3-8b-instruct"   
 
-# ✅ Function to get access token from IBM Cloud IAM
+
+
 def get_access_token():
+    url = "https://iam.cloud.ibm.com/identity/token"
     headers = {"Content-Type": "application/x-www-form-urlencoded"}
     data = {
         "grant_type": "urn:ibm:params:oauth:grant-type:apikey",
         "apikey": API_KEY
     }
-
-    response = requests.post(IAM_URL, headers=headers, data=data)
-
-    if response.status_code != 200:
-        raise Exception(f"""
-❌ Failed to get IAM token.
-
-Status: {response.status_code}
-Response: {response.text}
-""")
-
+    response = requests.post(url, headers=headers, data=data)
+    response.raise_for_status()
     return response.json()["access_token"]
 
-# ✅ Main function to send prompt and get AI response
 def get_ai_response(prompt):
     access_token = get_access_token()
 
@@ -48,12 +39,12 @@ def get_ai_response(prompt):
 
     payload = {
         "model_id": MODEL_ID,
-        "input": [prompt],
+        "input": prompt,
         "parameters": {
             "decoding_method": "sample",
-            "temperature": 0.7,
-            "top_k": 40,
-            "top_p": 0.95,
+             "temperature": 0.7,              # add creativity but stay grounded
+             "top_k": 40,
+             "top_p": 0.95,
             "max_new_tokens": 300
         },
         "project_id": PROJECT_ID
@@ -61,14 +52,17 @@ def get_ai_response(prompt):
 
     url = f"{BASE_URL}/ml/v1/text/generation?version=2024-05-01"
 
+    print("\n📤 REQUEST PAYLOAD:")
+    print(json.dumps(payload, indent=2))
+    print("\n🔗 URL:", url)
+
     try:
         response = requests.post(url, headers=headers, json=payload)
+        print("\n📥 RAW RESPONSE:")
+        print(response.text)
         response.raise_for_status()
         return response.json()["results"][0]["generated_text"]
-
     except requests.exceptions.HTTPError as err:
-        return f"[ERROR] HTTP Error: {err}\nDetails: {response.text}"
+        return f"\n❌ HTTP Error: {err}\nStatus: {response.status_code}\nDetails: {response.text}"
     except Exception as e:
-        return f"[ERROR] Other Error: {str(e)}"
-
-
+        return f"\n❌ Other Error: {str(e)}"
