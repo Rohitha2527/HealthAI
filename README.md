@@ -33,8 +33,9 @@ HealthAI is an AI-powered medical assistant built with Streamlit and IBM Watson'
   - Glucose
   - Symptom frequency (pie chart)
 - Powered by Plotly
+🌐 Live Application
 
----
+🔗 https://healthai-actay5rhgmswkgo6c6krnx.streamlit.app/
 
-## 🛠️ Project Structure
+
 
